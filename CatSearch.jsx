@@ -5,7 +5,7 @@ import debounce from "./debounce"
 export function CatSearch() {
   const [hits, setHits] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [isSearching, setIsSearching] = useState(false)
+  const [status, setStatus] = useState("idle")
 
   const isMoreThan2Chars = searchTerm.length >= 2
 
@@ -22,21 +22,33 @@ export function CatSearch() {
   useEffect(() => {
     if (!isMoreThan2Chars) {
       setHits([])
+      setStatus("idle")
       return
     }
-    setIsSearching(true)
+    setStatus("searching")
     fetchSearchResultsFromAPI(searchTerm)
       .then((hits) => {
         setHits(hits)
+        if (hits.length > 0) {
+          setStatus("success")
+        } else {
+          setStatus("noHits")
+        }
       })
       .catch((error) => {
-        console.error("Search failed:", error)
+        console.error(`Search failed: ${error.message}`)
+        setStatus("error")
         setHits([])
       })
-      .finally(() => {
-        setIsSearching(false)
-      })
   }, [searchTerm, isMoreThan2Chars])
+
+  const statusMessage = {
+    idle: "Type at least two characters to start searching",
+    searching: "Finding cats...",
+    error: "Search failed",
+    success: "Found cats!",
+    noHits: "No hits!",
+  }
 
   return (
     <div>
@@ -49,17 +61,10 @@ export function CatSearch() {
         Search for cat breed
       </label>
       <input id="cat-search" type="text" onChange={searchTermOnChange} />
+      <div>{statusMessage[status]}</div>
       <div>
-        {isMoreThan2Chars === false
-          ? "Type at least two characters to start searching"
-          : `You searched for ${searchTerm}`}
-      </div>
-      <div>
-        {isSearching
-          ? "Finding cats..."
-          : hits.length > 0
-          ? hits.map((hit, i) => <div key={i}>🐈 {hit.breed}</div>)
-          : "No hits!"}
+        {status === "success" &&
+          hits.map((hit, i) => <div key={i}>🐈 {hit.breed}</div>)}
       </div>
     </div>
   )
