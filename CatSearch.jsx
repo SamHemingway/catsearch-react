@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { fetchSearchResultsFromAPI } from "./searchApiClient"
 import debounce from "./debounce"
 
@@ -9,7 +9,10 @@ export function CatSearch() {
 
   const isMoreThan2Chars = searchTerm.length >= 2
 
-  const debouncedSetSearchTerm = debounce((value) => setSearchTerm(value), 1000)
+  const debouncedSetSearchTerm = useCallback(
+    debounce((value) => setSearchTerm(value), 1000),
+    []
+  )
 
   const searchTermOnChange = (event) => {
     const { value } = event.target
@@ -19,13 +22,16 @@ export function CatSearch() {
   useEffect(() => {
     if (!isMoreThan2Chars) {
       setHits([])
-      setIsSearching(false)
       return
     }
     setIsSearching(true)
     fetchSearchResultsFromAPI(searchTerm)
       .then((hits) => {
         setHits(hits)
+      })
+      .catch((error) => {
+        console.error("Search failed:", error)
+        setHits([])
       })
       .finally(() => {
         setIsSearching(false)
