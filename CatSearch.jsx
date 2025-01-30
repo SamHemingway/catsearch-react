@@ -42,17 +42,9 @@ export function CatSearch() {
       })
   }, [searchTerm, isMoreThan2Chars])
 
-  const statusMessage = {
-    idle: "Type at least two characters to start searching",
-    searching: "Finding cats...",
-    error: "Search failed",
-    success: "Found cats!",
-    noHits: "No hits!",
-  }
-
   return (
-    <div>
-      <h2>Cat Search!</h2>
+    <main>
+      <h1>Cat Search!</h1>
       <label
         htmlFor="cat-search"
         aria-label="Search for cat breed"
@@ -61,11 +53,19 @@ export function CatSearch() {
         Search for cat breed
       </label>
       <input id="cat-search" type="text" onChange={searchTermOnChange} />
-      <div>{statusMessage[status]}</div>
-      <div>
+      <div>{STATUS_MESSAGES[status]}</div>
+      <ul>
         {status === "success" &&
-          hits.map((hit, i) => <div key={i}>🐈 {hit.breed}</div>)}
-      </div>
-    </div>
+          hits.map((hit, i) => <li key={i}>🐈 {hit.breed}</li>)}
+      </ul>
+    </main>
   )
+}
+
+const STATUS_MESSAGES = {
+  idle: "Type at least two characters to start searching",
+  searching: "Finding cats...",
+  error: "Search failed",
+  success: "Found cats!",
+  noHits: "No hits!",
 }
