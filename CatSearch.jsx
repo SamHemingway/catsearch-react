@@ -35,7 +35,7 @@ export function CatSearch() {
       <div>
         {(hits && hits.length) > 0
           ? hits.map((hit, i) => <div key={i}>🐈 {hit.breed}</div>)
-          : "No hits"}
+          : "No hits!"}
       </div>
     </div>
   )
