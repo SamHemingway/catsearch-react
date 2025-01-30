@@ -40,8 +40,15 @@ export function CatSearch() {
 
   return (
     <div>
-      <h2>Search for cat breed</h2>
-      <input type="text" onChange={searchTermOnChange} />
+      <h2>Cat Search!</h2>
+      <label
+        htmlFor="cat-search"
+        aria-label="Search for cat breed"
+        style={{ marginRight: "10px" }}
+      >
+        Search for cat breed
+      </label>
+      <input id="cat-search" type="text" onChange={searchTermOnChange} />
       <div>
         {isMoreThan2Chars === false
           ? "Type at least two characters to start searching"
