@@ -7,7 +7,7 @@ export function CatSearch() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
 
-  const isMoreThan2Chars = searchTerm.length > 2
+  const isMoreThan2Chars = searchTerm.length >= 2
 
   const debouncedSetSearchTerm = debounce((value) => setSearchTerm(value), 1000)
 
