@@ -1,39 +1,50 @@
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import { fetchSearchResultsFromAPI } from "./searchApiClient"
+import debounce from "./debounce"
 
 export function CatSearch() {
-  const [valid, setValid] = useState(false)
   const [hits, setHits] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [isSearching, setIsSearching] = useState(false)
 
-  const searchTermOnChange = useCallback((event) => {
+  const isMoreThan2Chars = searchTerm.length > 2
+
+  const debouncedSetSearchTerm = debounce((value) => setSearchTerm(value), 1000)
+
+  const searchTermOnChange = (event) => {
     const { value } = event.target
-    setSearchTerm(value)
-  })
+    debouncedSetSearchTerm(value)
+  }
 
   useEffect(() => {
-    setValid(true)
-    if (searchTerm.length < 2) {
-      setValid(false)
+    if (!isMoreThan2Chars) {
+      setHits([])
+      setIsSearching(false)
       return
     }
-
-    return fetchSearchResultsFromAPI(searchTerm).then((hits) => {
-      setHits(hits)
-    })
-  }, [searchTerm])
+    setIsSearching(true)
+    fetchSearchResultsFromAPI(searchTerm)
+      .then((hits) => {
+        setHits(hits)
+      })
+      .finally(() => {
+        setIsSearching(false)
+      })
+  }, [searchTerm, isMoreThan2Chars])
 
   return (
     <div>
       <h2>Search for cat breed</h2>
       <input type="text" onChange={searchTermOnChange} />
       <div>
-        {valid === false
+        {isMoreThan2Chars === false
           ? "Type at least two characters to start searching"
           : `You searched for ${searchTerm}`}
       </div>
       <div>
-        {(hits && hits.length) > 0
+        {isSearching
+          ? "Finding cats..."
+          : hits.length > 0
           ? hits.map((hit, i) => <div key={i}>🐈 {hit.breed}</div>)
           : "No hits!"}
       </div>
