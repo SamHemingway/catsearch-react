@@ -5,6 +5,7 @@ import debounce from "./debounce"
 export function CatSearch() {
   const [hits, setHits] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [inputValue, setInputValue] = useState("")
   const [status, setStatus] = useState("idle")
 
   const isMoreThan2Chars = searchTerm.length >= 2
@@ -16,6 +17,7 @@ export function CatSearch() {
 
   const searchTermOnChange = (event) => {
     const { value } = event.target
+    setInputValue(value)
     debouncedSetSearchTerm(value)
   }
 
@@ -52,7 +54,12 @@ export function CatSearch() {
       >
         Search for cat breed
       </label>
-      <input id="cat-search" type="text" onChange={searchTermOnChange} />
+      <input
+        id="cat-search"
+        type="text"
+        onChange={searchTermOnChange}
+        value={inputValue}
+      />
       <div>{STATUS_MESSAGES[status]}</div>
       <ul>
         {status === "success" &&
