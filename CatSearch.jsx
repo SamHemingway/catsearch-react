@@ -1,42 +1,71 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { fetchSearchResultsFromAPI } from "./searchApiClient"
+import debounce from "./debounce"
 
 export function CatSearch() {
-  const [valid, setValid] = useState(false)
   const [hits, setHits] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [status, setStatus] = useState("idle")
 
-  const searchTermOnChange = useCallback((event) => {
+  const isMoreThan2Chars = searchTerm.length >= 2
+
+  const debouncedSetSearchTerm = useCallback(
+    debounce((value) => setSearchTerm(value), 1000),
+    []
+  )
+
+  const searchTermOnChange = (event) => {
     const { value } = event.target
-    setSearchTerm(value)
-  })
+    debouncedSetSearchTerm(value)
+  }
 
   useEffect(() => {
-    setValid(true)
-    if (searchTerm.length < 2) {
-      setValid(false)
+    if (!isMoreThan2Chars) {
+      setHits([])
+      setStatus("idle")
       return
     }
-
-    return fetchSearchResultsFromAPI(searchTerm).then((hits) => {
-      setHits(hits)
-    })
-  }, [searchTerm])
+    setStatus("searching")
+    fetchSearchResultsFromAPI(searchTerm)
+      .then((hits) => {
+        setHits(hits)
+        if (hits.length > 0) {
+          setStatus("success")
+        } else {
+          setStatus("noHits")
+        }
+      })
+      .catch((error) => {
+        console.error(`Search failed: ${error.message}`)
+        setStatus("error")
+        setHits([])
+      })
+  }, [searchTerm, isMoreThan2Chars])
 
   return (
-    <div>
-      <h2>Search for cat breed</h2>
-      <input type="text" onChange={searchTermOnChange} />
-      <div>
-        {valid === false
-          ? "Type at least two characters to start searching"
-          : `You searched for ${searchTerm}`}
-      </div>
-      <div>
-        {(hits && hits.length) > 0
-          ? hits.map((hit, i) => <div key={i}>🐈 {hit.breed}</div>)
-          : "No hits"}
-      </div>
-    </div>
+    <main>
+      <h1>Cat Search!</h1>
+      <label
+        htmlFor="cat-search"
+        aria-label="Search for cat breed"
+        style={{ marginRight: "10px" }}
+      >
+        Search for cat breed
+      </label>
+      <input id="cat-search" type="text" onChange={searchTermOnChange} />
+      <div>{STATUS_MESSAGES[status]}</div>
+      <ul>
+        {status === "success" &&
+          hits.map((hit, i) => <li key={i}>🐈 {hit.breed}</li>)}
+      </ul>
+    </main>
   )
+}
+
+const STATUS_MESSAGES = {
+  idle: "Type at least two characters to start searching",
+  searching: "Finding cats...",
+  error: "Search failed",
+  success: "Found cats!",
+  noHits: "No hits!",
 }
